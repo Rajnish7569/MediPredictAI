@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediPredict AI - Multi-Disease Diagnosis System</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Crimson+Pro:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0A4D68;
+            --primary-light: #088395;
+            --accent: #05BFDB;
+            --accent-warm: #00FFCA;
+            --bg-main: #F8FAFB;
+            --bg-card: #FFFFFF;
+            --text-primary: #1A1F36;
+            --text-secondary: #697386;
+            --text-muted: #8896AB;
+            --border: #E3E8EF;
+            --success: #00D9A5;
+            --warning: #FFB020;
+            --danger: #FF4757;
+            --shadow-sm: 0 2px 8px rgba(10, 77, 104, 0.08);
+            --shadow-md: 0 4px 16px rgba(10, 77, 104, 0.12);
+            --shadow-lg: 0 12px 40px rgba(10, 77, 104, 0.18);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #F8FAFB 0%, #E8F4F8 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .background-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        .background-decoration::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            opacity: 0.15;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .background-decoration::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -15%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+            opacity: 0.1;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 50px) scale(1.1); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: var(--shadow-md); }
+            50% { transform: scale(1.05); box-shadow: var(--shadow-lg); }
+        }
+
+        .logo-icon svg {
+            width: 32px;
+            height: 32px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2.5;
+        }
+
+        h1 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .disease-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .disease-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out backwards;
+        }
+
+        .disease-card:nth-child(1) { animation-delay: 0.1s; }
+        .disease-card:nth-child(2) { animation-delay: 0.2s; }
+        .disease-card:nth-child(3) { animation-delay: 0.3s; }
+        .disease-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .disease-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .disease-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent);
+        }
+
+        .disease-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .disease-card.active {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, rgba(5, 191, 219, 0.05) 0%, rgba(10, 77, 104, 0.05) 100%);
+        }
+
+        .disease-card.active::before {
+            transform: scaleX(1);
+        }
+
+        .disease-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .disease-icon svg {
+            width: 30px;
+            height: 30px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .disease-card h3 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .disease-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .accuracy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 217, 165, 0.1);
+            color: var(--success);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .accuracy-badge::before {
+            content: '✓';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+        }
+
+        .prediction-form {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .prediction-form.active {
+            display: block;
+        }
+
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .form-header h2 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.3s ease;
+            background: var(--bg-main);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(5, 191, 219, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-main);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            border-color: var(--primary);
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            margin-top: 2rem;
+            display: none;
+            animation: fadeInScale 0.5s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result-card.active {
+            display: block;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .result-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--success) 0%, #00FFCA 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .result-icon.negative {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result-icon svg {
+            width: 50px;
+            height: 50px;
+            stroke: white;
+            fill: none;
+            stroke-width: 3;
+        }
+
+        .result-header h3 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-header .confidence {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+
+        .result-details {
+            background: var(--bg-main);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-details h4 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .recommendation-box {
+            background: linear-gradient(135deg, rgba(5, 191, 219, 0.08) 0%, rgba(10, 77, 104, 0.08) 100%);
+            border-left: 4px solid var(--accent);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .recommendation-box h4 {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-box p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 1rem;
+            border: 4px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .disease-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .prediction-form,
+            .result-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-decoration"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+            </div>
+            <h1>MediPredict AI</h1>
+            <p class="subtitle">Advanced Multi-Disease Prediction System</p>
+        </header>
+
+        <div class="disease-grid">
+            <div class="disease-card" data-disease="diabetes">
+                <div class="disease-icon">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                </div>
+                <h3>Diabetes</h3>
+                <p>Predict diabetes risk based on clinical parameters including glucose levels, BMI, and family history.</p>
+                <span class="accuracy-badge">92.1% Accuracy</span>
+            </div>
+
+            <div class="disease-card" data-disease="heart">
+                <div class="disease-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </div>
+                <h3>Heart Disease</h3>
+                <p>Assess cardiovascular disease risk using ECG data, cholesterol levels, and blood pressure readings.</p>
+                <span class="accuracy-badge">95.6% Accuracy</span>
+            </div>
+
+            <div class="disease-card" data-disease="kidney">
+                <div class="disease-icon">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M9 9h6v6H9z"/>
+                    </svg>
+                </div>
+                <h3>Kidney Disease</h3>
+                <p>Evaluate kidney function through creatinine levels, blood urea, and other renal markers.</p>
+                <span class="accuracy-badge">100% Accuracy</span>
+            </div>
+
+            <div class="disease-card" data-disease="cancer">
+                <div class="disease-icon">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6M1 12h6m6 0h6"/>
+                    </svg>
+                </div>
+                <h3>Breast Cancer</h3>
+                <p>Detect breast cancer risk using cell characteristics from diagnostic imaging and biopsy data.</p>
+                <span class="accuracy-badge">95.6% Accuracy</span>
+            </div>
+        </div>
+
+        <!-- Diabetes Form -->
+        <div class="prediction-form" id="diabetes-form">
+            <div class="form-header">
+                <h2>Diabetes Prediction</h2>
+            </div>
+            <form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pregnancies</label>
+                        <input type="number" name="pregnancies" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Glucose (mg/dL)</label>
+                        <input type="number" name="glucose" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Pressure (mm Hg)</label>
+                        <input type="number" name="blood_pressure" min="0" step="0.1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Skin Thickness (mm)</label>
+                        <input type="number" name="skin_thickness" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Insulin (μU/mL)</label>
+                        <input type="number" name="insulin" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>BMI</label>
+                        <input type="number" name="bmi" min="0" step="0.1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Diabetes Pedigree Function</label>
+                        <input type="number" name="dpf" min="0" step="0.001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" name="age" min="0" required>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span>Predict</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Heart Disease Form -->
+        <div class="prediction-form" id="heart-form">
+            <div class="form-header">
+                <h2>Heart Disease Prediction</h2>
+            </div>
+            <form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" name="age" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sex</label>
+                        <select name="sex" required>
+                            <option value="">Select</option>
+                            <option value="0">Female</option>
+                            <option value="1">Male</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Chest Pain Type</label>
+                        <select name="cp" required>
+                            <option value="">Select</option>
+                            <option value="0">Typical Angina</option>
+                            <option value="1">Atypical Angina</option>
+                            <option value="2">Non-anginal Pain</option>
+                            <option value="3">Asymptomatic</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Resting BP (mm Hg)</label>
+                        <input type="number" name="trestbps" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cholesterol (mg/dL)</label>
+                        <input type="number" name="chol" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fasting Blood Sugar > 120 mg/dL</label>
+                        <select name="fbs" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Resting ECG</label>
+                        <select name="restecg" required>
+                            <option value="">Select</option>
+                            <option value="0">Normal</option>
+                            <option value="1">ST-T Wave Abnormality</option>
+                            <option value="2">Left Ventricular Hypertrophy</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Heart Rate</label>
+                        <input type="number" name="thalach" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Exercise Induced Angina</label>
+                        <select name="exang" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ST Depression</label>
+                        <input type="number" name="oldpeak" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Slope of ST Segment</label>
+                        <select name="slope" required>
+                            <option value="">Select</option>
+                            <option value="0">Upsloping</option>
+                            <option value="1">Flat</option>
+                            <option value="2">Downsloping</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Major Vessels (0-3)</label>
+                        <input type="number" name="ca" min="0" max="3" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Thalassemia</label>
+                        <select name="thal" required>
+                            <option value="">Select</option>
+                            <option value="0">Normal</option>
+                            <option value="1">Fixed Defect</option>
+                            <option value="2">Reversible Defect</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span>Predict</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Kidney Disease Form -->
+        <div class="prediction-form" id="kidney-form">
+            <div class="form-header">
+                <h2>Kidney Disease Prediction</h2>
+            </div>
+            <form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" name="age" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Pressure (mm Hg)</label>
+                        <input type="number" name="bp" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Specific Gravity</label>
+                        <input type="number" name="sg" min="0" step="0.001" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Albumin</label>
+                        <input type="number" name="al" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sugar</label>
+                        <input type="number" name="su" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Red Blood Cells</label>
+                        <select name="rbc" required>
+                            <option value="">Select</option>
+                            <option value="0">Normal</option>
+                            <option value="1">Abnormal</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pus Cell</label>
+                        <select name="pc" required>
+                            <option value="">Select</option>
+                            <option value="0">Normal</option>
+                            <option value="1">Abnormal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bacteria</label>
+                        <select name="ba" required>
+                            <option value="">Select</option>
+                            <option value="0">Not Present</option>
+                            <option value="1">Present</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Glucose (mg/dL)</label>
+                        <input type="number" name="bgr" min="0" step="0.1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Blood Urea (mg/dL)</label>
+                        <input type="number" name="bu" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Serum Creatinine (mg/dL)</label>
+                        <input type="number" name="sc" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sodium (mEq/L)</label>
+                        <input type="number" name="sod" min="0" step="0.1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Potassium (mEq/L)</label>
+                        <input type="number" name="pot" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hemoglobin (g/dL)</label>
+                        <input type="number" name="hemo" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Packed Cell Volume</label>
+                        <input type="number" name="pcv" min="0" step="0.1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>White Blood Cell Count</label>
+                        <input type="number" name="wc" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Red Blood Cell Count</label>
+                        <input type="number" name="rc" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hypertension</label>
+                        <select name="htn" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Diabetes Mellitus</label>
+                        <select name="dm" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Coronary Artery Disease</label>
+                        <select name="cad" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Appetite</label>
+                        <select name="appet" required>
+                            <option value="">Select</option>
+                            <option value="0">Poor</option>
+                            <option value="1">Good</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pedal Edema</label>
+                        <select name="pe" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Anemia</label>
+                        <select name="ane" required>
+                            <option value="">Select</option>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span>Predict</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Breast Cancer Form -->
+        <div class="prediction-form" id="cancer-form">
+            <div class="form-header">
+                <h2>Breast Cancer Prediction</h2>
+            </div>
+            <form>
+                <h4 style="color: var(--primary); margin-bottom: 1.5rem; font-family: 'Crimson Pro', serif;">Mean Values</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Radius Mean</label>
+                        <input type="number" name="radius_mean" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Texture Mean</label>
+                        <input type="number" name="texture_mean" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Perimeter Mean</label>
+                        <input type="number" name="perimeter_mean" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Area Mean</label>
+                        <input type="number" name="area_mean" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Smoothness Mean</label>
+                        <input type="number" name="smoothness_mean" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Compactness Mean</label>
+                        <input type="number" name="compactness_mean" min="0" step="0.0001" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Concavity Mean</label>
+                        <input type="number" name="concavity_mean" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Concave Points Mean</label>
+                        <input type="number" name="concave_points_mean" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Symmetry Mean</label>
+                        <input type="number" name="symmetry_mean" min="0" step="0.0001" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fractal Dimension Mean</label>
+                        <input type="number" name="fractal_dimension_mean" min="0" step="0.0001" required>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--primary); margin: 2rem 0 1.5rem; font-family: 'Crimson Pro', serif;">Standard Error Values</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Radius SE</label>
+                        <input type="number" name="radius_se" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Texture SE</label>
+                        <input type="number" name="texture_se" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Perimeter SE</label>
+                        <input type="number" name="perimeter_se" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Area SE</label>
+                        <input type="number" name="area_se" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Smoothness SE</label>
+                        <input type="number" name="smoothness_se" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Compactness SE</label>
+                        <input type="number" name="compactness_se" min="0" step="0.0001" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Concavity SE</label>
+                        <input type="number" name="concavity_se" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Concave Points SE</label>
+                        <input type="number" name="concave_points_se" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Symmetry SE</label>
+                        <input type="number" name="symmetry_se" min="0" step="0.0001" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fractal Dimension SE</label>
+                        <input type="number" name="fractal_dimension_se" min="0" step="0.0001" required>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--primary); margin: 2rem 0 1.5rem; font-family: 'Crimson Pro', serif;">Worst Values</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Radius Worst</label>
+                        <input type="number" name="radius_worst" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Texture Worst</label>
+                        <input type="number" name="texture_worst" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Perimeter Worst</label>
+                        <input type="number" name="perimeter_worst" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Area Worst</label>
+                        <input type="number" name="area_worst" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Smoothness Worst</label>
+                        <input type="number" name="smoothness_worst" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Compactness Worst</label>
+                        <input type="number" name="compactness_worst" min="0" step="0.0001" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Concavity Worst</label>
+                        <input type="number" name="concavity_worst" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Concave Points Worst</label>
+                        <input type="number" name="concave_points_worst" min="0" step="0.0001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Symmetry Worst</label>
+                        <input type="number" name="symmetry_worst" min="0" step="0.0001" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fractal Dimension Worst</label>
+                        <input type="number" name="fractal_dimension_worst" min="0" step="0.0001" required>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span>Predict</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing data and generating prediction...</p>
+        </div>
+
+        <!-- Result Display -->
+        <div class="result-card" id="result">
+            <div class="result-header">
+                <div class="result-icon" id="result-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <path d="M22 4L12 14.01l-3-3"/>
+                    </svg>
+                </div>
+                <h3 id="result-title">Prediction Result</h3>
+                <p class="confidence" id="result-confidence">Confidence: 94.5%</p>
+            </div>
+
+            <div class="result-details">
+                <h4>Analysis Summary</h4>
+                <div id="result-details-content">
+                    <!-- Details will be inserted here by JavaScript -->
+                </div>
+            </div>
+
+            <div class="recommendation-box">
+                <h4>Recommendation</h4>
+                <p id="recommendation-text">
+                    Based on the analysis, we recommend consulting with a healthcare professional for further evaluation and personalized medical advice.
+                </p>
+            </div>
+
+            <div class="btn-group" style="margin-top: 2rem;">
+                <button class="btn btn-secondary" onclick="resetForm()">New Prediction</button>
+                <button class="btn btn-primary" onclick="downloadReport()">
+                    <span>Download Report</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <path d="M7 10l5 5 5-5"/>
+                        <path d="M12 15V3"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 MediPredict AI | Developed by ABES Engineering College | For educational and research purposes only</p>
+            <p style="margin-top: 0.5rem;">This system is designed to assist healthcare professionals and should not replace professional medical diagnosis.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Global state
+        let currentDisease = null;
+
+        // Disease card click handlers
+        document.querySelectorAll('.disease-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const disease = this.dataset.disease;
+                selectDisease(disease);
+            });
+        });
+
+        function selectDisease(disease) {
+            // Remove active class from all cards
+            document.querySelectorAll('.disease-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Add active class to selected card
+            document.querySelector(`[data-disease="${disease}"]`).classList.add('active');
+
+            // Hide all forms
+            document.querySelectorAll('.prediction-form').forEach(form => {
+                form.classList.remove('active');
+            });
+
+            // Show selected form
+            document.getElementById(`${disease}-form`).classList.add('active');
+
+            // Hide result
+            document.getElementById('result').classList.remove('active');
+
+            currentDisease = disease;
+
+            // Scroll to form
+            setTimeout(() => {
+                document.getElementById(`${disease}-form`).scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 100);
+        }
+
+        // Form submission handlers
+        document.querySelectorAll('.prediction-form form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                handlePrediction(this);
+            });
+        });
+
+        const API_URL = 'http://localhost:5000';
+
+        async function handlePrediction(form) {
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => { data[key] = value; });
+
+            // Show loading
+            document.querySelectorAll('.prediction-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('loading').classList.add('active');
+
+            try {
+                const response = await fetch(`${API_URL}/api/predict/${currentDisease}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                document.getElementById('loading').classList.remove('active');
+
+                if (result.status === 'success') {
+                    showResult(result);
+                } else {
+                    alert('Error: ' + (result.message || 'Prediction failed'));
+                    resetForm();
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+                document.getElementById('loading').classList.remove('active');
+                alert('Could not connect to server. Make sure the Flask backend is running:\n\npython app.py');
+                resetForm();
+            }
+        }
+
+        function showResult(result) {
+            const resultCard          = document.getElementById('result');
+            const resultIcon          = document.getElementById('result-icon');
+            const resultTitle         = document.getElementById('result-title');
+            const resultConfidence    = document.getElementById('result-confidence');
+            const resultDetailsContent= document.getElementById('result-details-content');
+            const recommendationText  = document.getElementById('recommendation-text');
+
+            const isPositive = result.prediction_code === 1;
+
+            if (isPositive) {
+                resultIcon.classList.remove('negative');
+                resultTitle.textContent   = result.prediction;
+                resultTitle.style.color   = 'var(--danger)';
+            } else {
+                resultIcon.classList.add('negative');
+                resultTitle.textContent   = result.prediction;
+                resultTitle.style.color   = 'var(--success)';
+            }
+
+            resultConfidence.textContent  = result.confidence;
+            recommendationText.textContent= result.recommendation;
+
+            let detailsHTML = '';
+            Object.entries(result.input_parameters).forEach(([key, value]) => {
+                detailsHTML += `
+                    <div class="detail-item">
+                        <span class="detail-label">${key}</span>
+                        <span class="detail-value">${value}</span>
+                    </div>`;
+            });
+            resultDetailsContent.innerHTML = detailsHTML;
+
+            resultCard.classList.add('active');
+            setTimeout(() => {
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function resetForm() {
+            // Remove active from all cards
+            document.querySelectorAll('.disease-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Hide all forms and result
+            document.querySelectorAll('.prediction-form').forEach(form => {
+                form.classList.remove('active');
+                form.querySelector('form').reset();
+            });
+            document.getElementById('result').classList.remove('active');
+            document.getElementById('loading').classList.remove('active');
+
+            currentDisease = null;
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function downloadReport() {
+            alert('Report download functionality will be implemented with backend integration. This will generate a PDF report with detailed analysis and recommendations.');
+        }
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
