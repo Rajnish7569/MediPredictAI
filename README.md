@@ -138,6 +138,6 @@ All endpoints accept JSON and return prediction, confidence, and recommendation.
 
 ## Author
 
-**Rajnish Kumar** — [github.com/Rajnish7569](https://github.com/Rajnish7569) | [LinkedIn](https://linkedin.com/in/rajnish7569)
+**Rajnish Kumar** — [github.com/Rajnish7569](https://github.com/Rajnish7569) | [LinkedIn](https://www.linkedin.com/in/rajnish48/)
 
 **Meehika Agarwal** — [github.com/meehikaag](https://github.com/meehikaag) | [LinkedIn](https://linkedin.com/in/meehika-agarwal)
